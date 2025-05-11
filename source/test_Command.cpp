@@ -3,8 +3,6 @@
 
 #include "Command.hpp"
 
-using namespace ;
-
 // clang-format off
 
 // gTest grouping class
