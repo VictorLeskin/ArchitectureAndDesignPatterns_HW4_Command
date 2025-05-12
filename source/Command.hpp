@@ -182,70 +182,85 @@ public:
     iRotatable& m;
 };
 
-
-class iFuelConsumable //something capable to FuelConsume in a straight line
+class iFuelTank
 {
 public:
-    virtual ~iFuelConsumable() {}
+    virtual double Fuel() const = 0;
+    virtual void Fuel( double f ) = 0;
+};
+
+class cFuelTank : public iFuelTank
+{
+public:
+    cFuelTank(double f) : fuel(f) {}
+
+    virtual double Fuel() const override { return fuel;  }
+    virtual void Fuel(double f) override { fuel = f; }
+
+protected:
+    double fuel;
+};
+
+class iFuelConsumableOperation //something capable to ñonsume fuel
+{
+public:
+    virtual ~iFuelConsumableOperation() {}
 
     // access
     virtual const double Fuel() const = 0;
-
-    // change
-    virtual void Fuel(double f) = 0;
 };
 
-class cFuelConsumable : public iFuelConsumable
+class cFuelConsumableOperation : public iFuelConsumableOperation
 {
 public:
-    cFuelConsumable(double f) : fuel(f) {}
+    cFuelConsumableOperation(double f) : fuel(f) {}
 
     // access
     virtual const double Fuel() const { return fuel;  }
-
-    // change
-    virtual void Fuel(double f) { fuel = f;  }
 
 protected:
     double fuel;
 };
 
 
-
-class cCheckFuelCommand : public iCommand // class performing fuel consuming
+class cCheckFuelCommand : public iCommand // class check fuel consuming
 {
 public:
-    cCheckFuelCommand(iFuelConsumable& f_, double nf) : f(&f_), neccessaryFuel(nf) {}
+    cCheckFuelCommand(const iFuelConsumableOperation& o, const iFuelTank &t) : op(&o), tank(&t) {}
 
 public:
     void Execute() override
     {
-        // new position as old position + velocity.
-        if ((f->Fuel() + neccessaryFuel) > f->Fuel())
+        // new fuel amount = preious - operation cost should be >= 0
+        if ((tank->Fuel() - op->Fuel() ) < 0)
             throw( cException("Fuel is not enough"));
     }
 
     const char* Type() override { return "Check fuel"; }
 
 protected:
-    iFuelConsumable* f;
-    double neccessaryFuel;
+    const iFuelConsumableOperation* op;
+    const iFuelTank* tank;
 };
 
 
-class cBurnFuelCommand : public cCheckFuelCommand // class performing fuel consuming
+class cBurnFuelCommand : public iCommand // class burn fuel consuming
 {
 public:
-    using cCheckFuelCommand::cCheckFuelCommand;
+    cBurnFuelCommand(const iFuelConsumableOperation& o, iFuelTank& t) : op(&o), tank(&t) {}
 
 public:
     void Execute() override
     {
-        // new position as old position + velocity.
-        f->Fuel(f->Fuel() + neccessaryFuel);
+        // new fuel amount = preious - operation cost.
+        tank->Fuel(tank->Fuel() - op->Fuel());
     }
 
     const char* Type() override { return "Burn fuel"; }
+
+protected:
+    const iFuelConsumableOperation* op;
+    iFuelTank* tank;
 };
 
 class cMacroCommand : public iCommand
