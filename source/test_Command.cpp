@@ -20,6 +20,40 @@ public:
 
 };
 
+
+// gTest grouping class
+class test_cBurnFuelCommand : public ::testing::Test
+{
+public:
+    // additional class to access to member of tested class
+    class Test_cBurnFuelCommand : public cBurnFuelCommand
+    {
+    public:
+        // add here members for free access.
+        using cBurnFuelCommand::cBurnFuelCommand; // delegate constructors
+        using cBurnFuelCommand::op;
+        using cBurnFuelCommand::tank;
+    };
+
+};
+
+// gTest grouping class
+class test_cMacroCommand : public ::testing::Test
+{
+public:
+    // additional class to access to member of tested class
+    class Test_cMacroCommand : public cMacroCommand
+    {
+    public:
+        // add here members for free access.
+        using cMacroCommand::cMacroCommand; // delegate constructors
+        using cMacroCommand::commands;
+    };
+
+};
+
+
+
 TEST_F(test_cCheckFuelCommand, test_ctor)
 {
     cFuelConsumableOperation t1(22);
@@ -78,21 +112,6 @@ TEST_F(test_cCheckFuelCommand, test_Type)
 
 
 
-// gTest grouping class
-class test_cBurnFuelCommand : public ::testing::Test
-{
-public:
-    // additional class to access to member of tested class
-    class Test_cBurnFuelCommand : public cBurnFuelCommand
-    {
-    public:
-        // add here members for free access.
-        using cBurnFuelCommand::cBurnFuelCommand; // delegate constructors
-        using cBurnFuelCommand::op;
-        using cBurnFuelCommand::tank;
-    };
-
-};
 
 TEST_F(test_cBurnFuelCommand, test_ctor)
 {
@@ -133,3 +152,70 @@ TEST_F(test_cBurnFuelCommand, test_Type)
     ASSERT_STREQ("Burn fuel", t.Type());
 }
 
+
+TEST_F(test_cMacroCommand, test_ctor)
+{
+    {
+        Test_cMacroCommand t;
+
+        EXPECT_EQ(0, t.commands.size());
+        ASSERT_STREQ("Macro command:", t.Type());
+    }
+
+    {
+        cFuelConsumableOperation t1(22);
+        cFuelTank t2(21.9);
+
+        test_cBurnFuelCommand::Test_cBurnFuelCommand t3(t1, t2);
+        test_cCheckFuelCommand::Test_cCheckFuelCommand t4(t1, t2);
+
+        Test_cMacroCommand t(t3,t4);
+
+        EXPECT_EQ(2, t.commands.size());
+        ASSERT_STREQ("Macro command:Burn fuel,Check fuel", t.Type());
+    }
+}
+
+
+TEST_F(test_cMacroCommand, test_Execute)
+{
+    {
+        cFuelConsumableOperation t1(22);
+        cFuelTank t2(21.9);
+
+        test_cCheckFuelCommand::Test_cCheckFuelCommand t3(t1, t2);
+        test_cBurnFuelCommand::Test_cBurnFuelCommand t4(t1, t2);
+
+        Test_cMacroCommand t(t3, t4);
+
+        try
+        { 
+            t.Execute();
+        }
+        catch (const cCommandException& e)
+        {
+            ASSERT_STREQ("Macro command,Fuel is not enough", e.what());
+        }
+    }
+
+    {
+        cFuelConsumableOperation t1(22);
+        cFuelTank t2(24);
+
+        test_cCheckFuelCommand::Test_cCheckFuelCommand t3(t1, t2);
+        test_cBurnFuelCommand::Test_cBurnFuelCommand t4(t1, t2);
+
+        Test_cMacroCommand t(t3, t4);
+
+        try
+        {
+            t.Execute();
+            EXPECT_EQ(2, t2.Fuel());
+        }
+        catch (const cCommandException& )
+        {
+            FAIL() << "No exception expected";
+        }
+    }
+
+}

@@ -75,7 +75,6 @@ protected:
     const char* szWhat;
 };
 
-
 class iMovable //something capable to move in a straight line
 {
 public:
@@ -266,8 +265,12 @@ protected:
 class cMacroCommand : public iCommand
 {
 public:
-    cMacroCommand(iCommand* a, iCommand* b, iCommand *c);
+    cMacroCommand();
+    cMacroCommand(iCommand& a);
+    cMacroCommand(iCommand& a, iCommand& b);
+    cMacroCommand(iCommand& a, iCommand& b, iCommand& c);
 
+    void Execute() override;
     const char* Type() override { return type.c_str(); }
 
 protected:    
@@ -275,8 +278,18 @@ protected:
     std::string type;
 };
 
-class Command
+// base class exception thrown by command execution
+class cCommandException : public cException
 {
+public:
+    cCommandException(const char* sz);
+    cCommandException(const char *sz, const std::exception &e);
+
+    const char* what() const noexcept { return sWhat.c_str(); }
+
+protected:
+    std::string sWhat;
 };
+
 
 #endif //#ifndef COMMAND_HPP
