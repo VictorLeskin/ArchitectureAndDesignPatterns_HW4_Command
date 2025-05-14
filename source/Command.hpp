@@ -347,7 +347,7 @@ public:
 class cChangeVelocityCommand : public iCommand
 {
 public:    
-    cChangeVelocityCommand(iMovable& m_, const cVector &vel_) : m(&m_), vel(&vel_) {}
+    cChangeVelocityCommand(iMovable& m_, const cVector &vel_) : m(&m_), vel(vel_) {}
 
     void Execute() override;
 
@@ -355,8 +355,23 @@ public:
 
 protected:
     iMovable *m;
-    const cVector* vel;
+    cVector vel;
 };
+
+class cRotateMovable : public cMacroCommand //class to perform rotation
+{
+public:
+    cRotateMovable(iRotatable& r_, iMovable& m_) : r(&r_), m(&m_) {}
+
+public:
+    void Execute() override;
+    const char* Type() override { return "Rotate a movable object"; }
+
+public:
+    iRotatable *r;
+    iMovable *m;
+};
+
 
 
 #endif //#ifndef COMMAND_HPP

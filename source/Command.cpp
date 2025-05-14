@@ -60,10 +60,19 @@ void cChangeVelocityCommand::Execute()
 {
 	try
 	{
-		m->Velocity(*vel);
+		m->Velocity(vel);
 	}
 	catch (const std::exception& e)
 	{
 		throw cCommandException("Change velocity command", e);
 	}
+}
+
+void cRotateMovable::Execute()
+{
+	cVector v;
+	cMacroCommand m(
+		*cCommandsFactory::Create<cRotate, iRotatable>(r),
+		*cCommandsFactory::Create<cChangeVelocityCommand, iMovable, cVector>(m, m->Velocity()));
+
 }
