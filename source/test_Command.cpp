@@ -66,6 +66,17 @@ public:
     }
 };
 
+class cNoMovable : public cMovable
+{
+public:
+  cNoMovable() : cMovable(cVector(), cVector()) {}
+  void Velocity(const cVector& vel) override
+  {
+    throw cException("No moving object");
+  }
+};
+
+
 
 // gTest grouping class
 class test_cMoveWithFuelConsumation : public ::testing::Test
@@ -92,8 +103,24 @@ public:
         // add here members for free access.
         using cChangeVelocityCommand::cChangeVelocityCommand; // delegate constructors
     };
-
 };
+
+
+// gTest grouping class
+class test_cRotateMovable : public ::testing::Test
+{
+public:
+  // additional class to access to member of tested class
+  class Test_cRotateMovable : public cRotateMovable
+  {
+  public:
+    // add here members for free access.
+    using cRotateMovable::cRotateMovable; // delegate constructors
+  };
+};
+
+
+
 
 
 TEST_F(test_cCheckFuelCommand, test_ctor)
@@ -307,17 +334,6 @@ TEST_F(test_cChangeVelocityCommand, test_Execute)
 
 TEST_F(test_cChangeVelocityCommand, test_Execute_throw_expection )
 {
-    class cNoMovable : public cMovable
-    {
-    public:
-        cNoMovable() : cMovable(cVector(), cVector()) {}
-        // change
-        void Velocity(const cVector& vel) override
-        {
-            throw cException("No moving object");
-        }
-    };
-
     cNoMovable m;
     cVector n(-6, 4);
     Test_cChangeVelocityCommand t(m, n);
@@ -331,3 +347,37 @@ TEST_F(test_cChangeVelocityCommand, test_Execute_throw_expection )
         ASSERT_STREQ("Change velocity command,No moving object", e.what());
     }
 }
+
+TEST_F(test_cRotateMovable, test_Execute)
+{
+  cMovable m(cVector(12, 5), cVector(3, 4));
+  cRotatable r( 30, 15 + 90 );
+
+  Test_cRotateMovable t(r, m);
+
+  t.Execute();
+
+  EXPECT_EQ(135, r.Direction());
+  EXPECT_NEAR(-5.0/sqrt(2), m.Velocity().x, 1.0e-12);
+  EXPECT_NEAR( 5.0/sqrt(2), m.Velocity().y, 1.0e-12);
+}
+
+
+TEST_F(test_cRotateMovable, test_Execute_trow_Exception )
+{
+  cNoMovable m;
+  cRotatable r(30, 15 + 90);
+
+  Test_cRotateMovable t(r, m);
+
+  try
+  {
+    t.Execute();
+  }
+  catch (const std::exception& e)
+  {
+    ASSERT_STREQ("Change velocity command,No moving object", e.what());
+  }
+}
+
+

@@ -9,7 +9,14 @@
 
 #include <math.h>
 
-static constexpr double DPI = 3.14159265358979323846;
+static constexpr double DPI = 3.1415926535897932;
+static constexpr double D0o5PI = 3.1415926535897932 / 2;
+static constexpr double D2o0PI = 2 * 3.1415926535897932;
+
+static constexpr double RAD2DEG = (180 / DPI);
+static constexpr double DEG2RAD = (DPI / 180);
+static constexpr double rad2deg(const double r) { return r * RAD2DEG; }
+static constexpr double deg2rad(const double d) { return d * DEG2RAD; }
 
 // interface class of command
 class iCommand
@@ -59,6 +66,11 @@ public:
 
     bool operator==(const cVector& rhs) const { return (x == rhs.x) && (y == rhs.y); }
     bool operator!=(const cVector& rhs) const { return (x != rhs.x) || (y != rhs.y); }
+
+    static double dot(const cVector& lhv, const cVector& rhv) { return lhv.x * rhv.x + lhv.y * rhv.y; }
+    double LengthSqr() const { return dot(*this, *this);  }
+    double Length() const { return sqrt(LengthSqr()); }
+
 
 public:
     T x, y;
@@ -358,10 +370,11 @@ protected:
     cVector vel;
 };
 
-class cRotateMovable : public cMacroCommand //class to perform rotation
+
+class cRotateMovable : public iCommand
 {
 public:
-    cRotateMovable(iRotatable& r_, iMovable& m_) : r(&r_), m(&m_) {}
+  cRotateMovable(iRotatable& r_, iMovable& m_);
 
 public:
     void Execute() override;

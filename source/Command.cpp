@@ -68,11 +68,18 @@ void cChangeVelocityCommand::Execute()
 	}
 }
 
+cRotateMovable::cRotateMovable(iRotatable& r_, iMovable& m_) : r(&r_), m(&m_)
+{
+}
+
 void cRotateMovable::Execute()
 {
-	cVector v;
-	cMacroCommand m(
-		*cCommandsFactory::Create<cRotate, iRotatable>(r),
-		*cCommandsFactory::Create<cChangeVelocityCommand, iMovable, cVector>(m, m->Velocity()));
+	// update rotating
+	cCommandsFactory::Create<cRotate, iRotatable>(*r)->Execute();
 
+	double len = m->Velocity().Length();
+	double direction = deg2rad(r->Direction());
+	cVector v(len* cos(direction), len*sin(direction));
+
+	cCommandsFactory::Create<cChangeVelocityCommand, iMovable, const cVector>( *m, v )->Execute();
 }
