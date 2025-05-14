@@ -1,5 +1,7 @@
 #include "Command.hpp"
 
+std::vector< std::unique_ptr<iCommand> > cCommandsFactory::storage;
+
 cMacroCommand::cMacroCommand()
 {
 	type = "Macro command:";
@@ -11,6 +13,7 @@ cMacroCommand::cMacroCommand(iCommand& a)
 
 	commands.push_back(&a); type += a.Type();
 }
+
 cMacroCommand::cMacroCommand(iCommand& a, iCommand& b)
 {
 	type = "Macro command:";

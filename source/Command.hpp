@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <exception>
+#include <memory>
 
 #include <math.h>
 
@@ -291,5 +292,57 @@ protected:
     std::string sWhat;
 };
 
+
+// create commands depended on input parameters.
+// all create commands will be stored as shared ptr in static container and 
+// to avoid provlems with memory allocation.
+class cCommandsFactory
+{
+public:
+    static std::vector< std::unique_ptr<iCommand> > storage;
+
+    static iCommand* push_back(iCommand* cmd)
+    {
+        storage.push_back(std::unique_ptr<iCommand>(cmd));
+        return cmd;
+    }
+
+    template<typename COMMAND_TYPE> 
+    static COMMAND_TYPE* Create()
+    {
+        return push_back(new COMMAND_TYPE);
+    }
+
+    template<typename COMMAND_TYPE, typename ARG_TYPE1 > 
+    static iCommand* Create(ARG_TYPE1 &arg1 )
+    {
+        return push_back(new COMMAND_TYPE(arg1));
+    }
+
+    template<typename COMMAND_TYPE, typename ARG_TYPE1, typename ARG_TYPE2 > 
+    static iCommand* Create(ARG_TYPE1& arg1, ARG_TYPE2& arg2 )
+    {
+        return push_back(new COMMAND_TYPE(arg1, arg2));
+    }
+
+    template<typename COMMAND_TYPE, typename ARG_TYPE1, typename ARG_TYPE2, typename ARG_TYPE3 >
+    static iCommand* Create(ARG_TYPE1& arg1, ARG_TYPE2& arg2, ARG_TYPE3& arg3)
+    {
+        return push_back(new COMMAND_TYPE(arg1, arg2, arg3));
+    }
+
+};
+
+
+class cMoveWithFuelConsumation : public cMacroCommand
+{
+public:
+    cMoveWithFuelConsumation(iMovable &m, iFuelConsumableOperation& o, iFuelTank& t) :
+        cMacroCommand(
+            *cCommandsFactory::Create<cCheckFuelCommand, iFuelConsumableOperation, iFuelTank>(o,t),
+            *cCommandsFactory::Create<cMove, iMovable>(m),
+            *cCommandsFactory::Create<cBurnFuelCommand, iFuelConsumableOperation, iFuelTank>(o, t))
+    {}
+};
 
 #endif //#ifndef COMMAND_HPP

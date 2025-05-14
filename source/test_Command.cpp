@@ -1,4 +1,3 @@
-
 #include <gtest/gtest.h>
 
 #include "Command.hpp"
@@ -17,7 +16,6 @@ public:
         using cCheckFuelCommand::op;
         using cCheckFuelCommand::tank;
     };
-
 };
 
 
@@ -50,6 +48,37 @@ public:
         using cMacroCommand::commands;
     };
 
+};
+
+// additional class to access to member of tested class
+class Test_cSpaceShip
+{
+public:
+    cMovable m;
+    cFuelTank t;
+    cFuelConsumableOperation op;
+    
+public:
+    // add here members for free access.
+    Test_cSpaceShip(const cVector& pos, const cVector& vel, double f, double operaionCost ) :
+        m(pos, vel), t(f), op( operaionCost)
+    {
+    }
+};
+
+
+// gTest grouping class
+class test_cMoveWithFuelConsumation : public ::testing::Test
+{
+public:
+    // additional class to access to member of tested class
+    class Test_cMoveWithFuelConsumation : public cMoveWithFuelConsumation
+    {
+    public:
+        // add here members for free access.
+        using cMoveWithFuelConsumation::cMoveWithFuelConsumation; // delegate constructors
+        using cMacroCommand::commands;
+    };
 };
 
 
@@ -217,5 +246,33 @@ TEST_F(test_cMacroCommand, test_Execute)
             FAIL() << "No exception expected";
         }
     }
+}
 
+
+TEST_F(test_cMoveWithFuelConsumation, test_Execute)
+{
+    Test_cSpaceShip t0(cVector(12, 5), cVector(-7, 3), 22, 10 );
+    Test_cMoveWithFuelConsumation t(t0.m, t0.op, t0.t);
+
+    t.Execute();
+
+    EXPECT_EQ(cVector(5, 8), t0.m.Position());
+    EXPECT_EQ(12, t0.t.Fuel());
+}
+
+TEST_F(test_cMoveWithFuelConsumation, test_Execute_NoEnoughFuel)
+{
+    Test_cSpaceShip t0(cVector(12, 5), cVector(-7, 3), 22, 24);
+    Test_cMoveWithFuelConsumation t(t0.m, t0.op, t0.t);
+
+    try
+    {
+        t.Execute();
+    }
+    catch (const std::exception& e)
+    {
+        ASSERT_STREQ("Macro command,Fuel is not enough", e.what());
+        EXPECT_EQ(cVector(12, 5), t0.m.Position());
+        EXPECT_EQ(22, t0.t.Fuel());
+    }
 }
