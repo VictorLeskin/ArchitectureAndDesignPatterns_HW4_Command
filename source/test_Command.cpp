@@ -317,7 +317,6 @@ TEST_F(test_cMoveWithFuelConsumation, test_Execute_NoEnoughFuel)
     }
 }
 
-
 TEST_F(test_cChangeVelocityCommand, test_Execute)
 {
     Test_cSpaceShip t0(cVector(12, 5), cVector(-7, 3), 22, 10);
@@ -329,8 +328,6 @@ TEST_F(test_cChangeVelocityCommand, test_Execute)
     EXPECT_EQ(cVector(12, 5), t0.m.Position());
     EXPECT_EQ(cVector(-6, 4), t0.m.Velocity());
 }
-
-
 
 TEST_F(test_cChangeVelocityCommand, test_Execute_throw_expection )
 {
@@ -362,7 +359,6 @@ TEST_F(test_cRotateMovable, test_Execute)
   EXPECT_NEAR( 5.0/sqrt(2), m.Velocity().y, 1.0e-12);
 }
 
-
 TEST_F(test_cRotateMovable, test_Execute_trow_Exception )
 {
   cNoMovable m;
@@ -379,5 +375,3 @@ TEST_F(test_cRotateMovable, test_Execute_trow_Exception )
     ASSERT_STREQ("Change velocity command,No moving object", e.what());
   }
 }
-
-
