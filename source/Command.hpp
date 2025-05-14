@@ -330,7 +330,6 @@ public:
     {
         return push_back(new COMMAND_TYPE(arg1, arg2, arg3));
     }
-
 };
 
 
@@ -344,5 +343,20 @@ public:
             *cCommandsFactory::Create<cBurnFuelCommand, iFuelConsumableOperation, iFuelTank>(o, t))
     {}
 };
+
+class cChangeVelocityCommand : public iCommand
+{
+public:    
+    cChangeVelocityCommand(iMovable& m_, const cVector &vel_) : m(&m_), vel(&vel_) {}
+
+    void Execute() override;
+
+    const char* Type() override { return "Change velocity"; }
+
+protected:
+    iMovable *m;
+    const cVector* vel;
+};
+
 
 #endif //#ifndef COMMAND_HPP

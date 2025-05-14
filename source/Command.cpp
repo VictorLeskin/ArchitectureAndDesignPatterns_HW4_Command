@@ -55,3 +55,15 @@ cCommandException::cCommandException(const char *sz, const std::exception& e) : 
 	sWhat += ",";
 	sWhat += e.what();
 }
+
+void cChangeVelocityCommand::Execute()
+{
+	try
+	{
+		m->Velocity(*vel);
+	}
+	catch (const std::exception& e)
+	{
+		throw cCommandException("Change velocity command", e);
+	}
+}

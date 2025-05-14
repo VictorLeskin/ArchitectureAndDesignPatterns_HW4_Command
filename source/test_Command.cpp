@@ -81,6 +81,19 @@ public:
     };
 };
 
+// gTest grouping class
+class test_cChangeVelocityCommand : public ::testing::Test
+{
+public:
+    // additional class to access to member of tested class
+    class Test_cChangeVelocityCommand : public cChangeVelocityCommand
+    {
+    public:
+        // add here members for free access.
+        using cChangeVelocityCommand::cChangeVelocityCommand; // delegate constructors
+    };
+
+};
 
 
 TEST_F(test_cCheckFuelCommand, test_ctor)
@@ -274,5 +287,47 @@ TEST_F(test_cMoveWithFuelConsumation, test_Execute_NoEnoughFuel)
         ASSERT_STREQ("Macro command,Fuel is not enough", e.what());
         EXPECT_EQ(cVector(12, 5), t0.m.Position());
         EXPECT_EQ(22, t0.t.Fuel());
+    }
+}
+
+
+TEST_F(test_cChangeVelocityCommand, test_Execute)
+{
+    Test_cSpaceShip t0(cVector(12, 5), cVector(-7, 3), 22, 10);
+    cVector n(-6, 4);
+    Test_cChangeVelocityCommand t(t0.m, n);
+
+    t.Execute();
+
+    EXPECT_EQ(cVector(12, 5), t0.m.Position());
+    EXPECT_EQ(cVector(-6, 4), t0.m.Velocity());
+}
+
+
+
+TEST_F(test_cChangeVelocityCommand, test_Execute_throw_expection )
+{
+    class cNoMovable : public cMovable
+    {
+    public:
+        cNoMovable() : cMovable(cVector(), cVector()) {}
+        // change
+        void Velocity(const cVector& vel) override
+        {
+            throw cException("No moving object");
+        }
+    };
+
+    cNoMovable m;
+    cVector n(-6, 4);
+    Test_cChangeVelocityCommand t(m, n);
+
+    try
+    {
+        t.Execute();
+    }
+    catch (const std::exception& e)
+    {
+        ASSERT_STREQ("Change velocity command,No moving object", e.what());
     }
 }
